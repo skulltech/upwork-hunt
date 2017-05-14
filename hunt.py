@@ -36,6 +36,8 @@ jobs = []
 
 for job in scraped_jobs:
 	job_dict = {
+	'id': job.get_attribute('id')[4:],
+	'link': 'https://www.upwork.com/o/jobs/job/_' + job.get_attribute('id')[4:],
 	'title': job.find_element_by_tag_name('h2').text,
 	'description': job.find_elements_by_tag_name('span')[6].get_attribute('textContent')
 	}
