@@ -1,5 +1,9 @@
 import requests
+import wdstart
+
 from lxml import html
+from selenium import webdriver
+
 
 urls = {
 	'web-soft-dev': 'https://www.upwork.com/o/jobs/browse/c/web-mobile-software-dev/',
@@ -18,15 +22,24 @@ urls = {
 
 url = urls['it-networking']
 
+
+browser = wdstart.start_webdriver('Chrome')
+browser.get(url)
+
+'''
 page = requests.get(url)
 tree = html.fromstring(page.content)
+'''
 
-scraped_jobs = tree.xpath('//section[@class="job-tile"]')
+scraped_jobs = browser.find_elements_by_class_name('job-tile')[:10]
 jobs = []
 
 for job in scraped_jobs:
 	job_dict = {
-	'title': job.xpath('/div[0]/text()'),
+	'title': job.find_element_by_tag_name('h2').text,
+	'description': job.find_elements_by_tag_name('span')[6].get_attribute('textContent')
 	}
 
 	jobs.append(job_dict)
+
+print(jobs)
