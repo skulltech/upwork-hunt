@@ -1,0 +1,2 @@
+feedparser
+google-api-python-client
