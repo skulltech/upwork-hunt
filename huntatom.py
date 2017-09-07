@@ -2,6 +2,8 @@ import feedparser
 import pygmail
 import time
 import pprint
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 
 
 def getURLs(filename):
@@ -16,6 +18,30 @@ def notify(jobs, sender, receiver):
 
 	if message:
 		pygmail.send_mail(sender, receiver, 'Upwork-Hunt Jobs', message)
+
+def login(username, password, driver):
+	driver.get('https://www.upwork.com/ab/account-security/login')
+	driver.find_element_by_id('login_username').send_keys(username)
+	passfield = driver.find_element_by_id('login_password')
+	passfield.send_keys(password)
+	passfield.submit()
+
+def send_proposal(link, driver, proposal):
+	jobID = link[-29:-11]
+	driver.get('https://www.upwork.com/ab/proposals/job/~{}/apply/'.format(jobID))
+	try:
+		duration = driver.find_element_by_id('apply_duration')
+	except NoSuchElementException:
+		pass
+	else:
+		duration.click()
+		duration.find_element_by_xpath('/div/ul/li[2]').click()
+
+	additional = driver.find_element_by_css_selector('div.air-card')
+	for textarea in additional.find_element_by_css_selector('textarea'):
+		textarea.send_keys(proposal)
+
+	driver.find_element_by_xpath('a[@data-olog-name="apply"]').click()
 
 def main():
 	filename = input('Enter the name of file containing Atom feed URLs > ') or 'urls.txt'
