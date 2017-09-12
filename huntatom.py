@@ -4,6 +4,10 @@ import time
 import pprint
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 def getURLs(filename):
@@ -22,26 +26,43 @@ def notify(jobs, sender, receiver):
 def login(username, password, driver):
 	driver.get('https://www.upwork.com/ab/account-security/login')
 	driver.find_element_by_id('login_username').send_keys(username)
-	passfield = driver.find_element_by_id('login_password')
-	passfield.send_keys(password)
-	passfield.submit()
+	passfield = driver.find_element_by_id('login_password').send_keys(password)
+	driver.find_element_by_xpath('//button[@type="submit"]').click()
 
-def send_proposal(link, driver, proposal):
-	jobID = link[-29:-11]
+def send_proposal(jobID, driver, proposal):
 	driver.get('https://www.upwork.com/ab/proposals/job/~{}/apply/'.format(jobID))
+	time.sleep(5)
+
 	try:
-		duration = driver.find_element_by_id('apply_duration')
+		driver.find_elements_by_css_selector('span.checkbox-replacement-helper')[1].click()
+	except (NoSuchElementException, IndexError):
+		pass
+
+	try:
+		duration = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'apply_duration')))
 	except NoSuchElementException:
 		pass
 	else:
-		duration.click()
-		duration.find_element_by_xpath('/div/ul/li[2]').click()
+		driver.execute_script("arguments[0].scrollIntoView();", duration)
+		duration.find_element_by_css_selector('div.btn-group.dropdown').click()
+		driver.find_elements_by_css_selector('.eo-dropdown-menu > li')[1].click()
 
-	additional = driver.find_element_by_css_selector('div.air-card')
-	for textarea in additional.find_element_by_css_selector('textarea'):
-		textarea.send_keys(proposal)
+	driver.find_element_by_id('coverLetter').send_keys(proposal)
+	i = 1
+	while (i > 0):
+		try:
+			driver.find_element_by_id('question{}'.format(i)).send_keys(proposal)
+		except NoSuchElementException:
+			break
+		else:
+			i = i+1
 
-	driver.find_element_by_xpath('a[@data-olog-name="apply"]').click()
+	driver.find_elements_by_css_selector('a.m-0')[0].click()
+	try:
+		driver.find_element_by_xpath('//input[@name="checkbox"]').click()
+		driver.find_elements_by_css_selector('button.btn.btn-primary').click()
+	except NoSuchElementException:
+		pass
 
 def main():
 	filename = input('Enter the name of file containing Atom feed URLs > ') or 'urls.txt'
@@ -64,6 +85,7 @@ def main():
 
 		if tosend: 
 			notify(tosend, sender, receiver)
+			jobID = link[-29:-11]
 		time.sleep(wait)
 
 if __name__=='__main__':
