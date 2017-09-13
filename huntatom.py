@@ -69,6 +69,12 @@ def main():
 	wait = int(input('Enter time to wait between scans (in seconds) > ') or 50)
 	sender = input('Enter the Gmail address of the notification sender > ')
 	receiver = input('Enter the receiver of the notification receiver > ')
+	username = input('Enter your Upwork username > ')
+	password = input('Enter your Upwork password > ')
+	proposal = input('Enter your Upwork proposal > ')
+
+	driver = webdriver.Firefox()
+	login(username, password, driver)
 	urls = getURLs(filename)
 	feeds = [feedparser.parse(url) for url in urls]
 	scraped = {}
@@ -86,6 +92,7 @@ def main():
 		if tosend: 
 			notify(tosend, sender, receiver)
 			jobID = link[-29:-11]
+			send_proposal(jobID, driver, proposal)
 		time.sleep(wait)
 
 if __name__=='__main__':
