@@ -58,9 +58,10 @@ def send_proposal(jobID, driver, proposal):
 			i = i+1
 
 	driver.find_elements_by_css_selector('a.m-0')[0].click()
+	time.sleep(5)
 	try:
-		driver.find_element_by_xpath('//input[@name="checkbox"]').click()
-		driver.find_elements_by_css_selector('button.btn.btn-primary').click()
+		driver.find_element_by_css_selector('div.modal-body > div.checkbox').click()
+		driver.find_element_by_css_selector('button.btn.btn-primary').click()
 	except NoSuchElementException:
 		pass
 
